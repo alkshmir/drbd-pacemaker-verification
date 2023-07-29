@@ -21,6 +21,7 @@ resource "google_compute_instance" "vm_instance" {
   name         = "compute-instance-${count.index + 1}"
   machine_type = "n2-standard-2"
   zone         = "us-central1-a"  # Replace with your desired zone in Iowa
+  tags         = ["ssh"]
 
   scheduling {
     preemptible = false
@@ -73,5 +74,20 @@ resource "google_compute_attached_disk" "additional_disk_attachment" {
   instance    = google_compute_instance.vm_instance[count.index].name
   disk        = google_compute_disk.additional_disk[count.index].name
   zone        = "us-central1-a"
+}
+
+# Firewall rule that allows SSH from Cloud IAP
+# for more info: https://cloud.google.com/iap/docs/using-tcp-forwarding
+resource "google_compute_firewall" "ssh" {
+  name = "allow-ssh-from-iap"
+  allow {
+    ports    = ["22"]
+    protocol = "tcp"
+  }
+  direction     = "INGRESS"
+  network       = google_compute_network.vpc_network.id
+  priority      = 1000
+  source_ranges = ["0.0.0.0/0"]
+  target_tags   = ["ssh"]
 }
 
