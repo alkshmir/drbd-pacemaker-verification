@@ -1,5 +1,17 @@
 ## deploy
 
+### configure ssh keys
+make ssh key pair to connect VMs.
+```
+ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
+```
+
+make `terraform.tfvars` file:
+```hcl
+ssh_public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAB... your_email@example.com"
+```
+* Replace `"ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAB... your_email@example.com"` with the actual content of your public key.
+
 ### provisioning VMs
 ```
 gcloud init
@@ -12,28 +24,40 @@ terraform plan
 terraform apply
 ```
 
-### install packages using ansible
-install required packages using ansible preinstalled on each VM.
+above commands deploys 2 compute engines.
+### configure ssh connections
 
-specify internal IPs of VMs (run on terraform node)
+specify ephemeral external IPs of VMs (run on terraform node)
+```
+jq '.resources[] | select(.type == "google_compute_instance") | .instances[].attributes.network_interface[].access_config[].nat_ip' terraform.tfstate -r
+```
+
+setup ssh configuration in `~/.ssh/config`
+```
+Host compute-instance-1
+    HostName aaa.bbb.ccc.ddd
+    User root
+    IdentityFile /path/to/secret_key
+Host compute-instance-2
+    HostName aaa.bbb.ccc.ddd
+    User root
+    IdentityFile /path/to/secret_key
+```
+* replace IP addresses above with the values specified by `jq` command above (or values shown on Google cloud console)
+
+type `ssh compute-instace-1` and `ssh compute-instance-2` to check configuration and add host keys to `known_hosts`.
+
+### install packages using ansible
+
+specify internal IPs of VMs IPs
 ```
 jq '.resources[] | select(.type == "google_compute_instance") | .instances[].attributes.network_interface[].network_ip' terraform.tfstate -r
 ```
 
-ssh to one of the provisioned nodes.
-clone this repository (on one node)
-```
-git clone https://github.com/alkshmir/drbd-pacemaker-verification.git
-```
-
 setup inventory
 ```
-cd drbd-pacemaker-verification
-cat << EOF > inventory.ini
-> 10.0.1.2
-> 10.0.1.3
-> EOF
+vim inventory.yaml
 ```
-* replace IP addresses above with the values specified by `jq` command above (or values shown on Google cloud console)
+* replace `internal_ip` with the values specified by `jq` command above (or values shown on Google cloud console)
 
 
