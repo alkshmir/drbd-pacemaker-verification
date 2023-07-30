@@ -61,3 +61,7 @@ vim inventory.yaml
 * replace `internal_ip` with the values specified by `jq` command above (or values shown on Google cloud console)
 
 
+run installation
+```
+ansible-playbook -i inventory.yaml install.yaml
+```
