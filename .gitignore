@@ -1,6 +1,9 @@
 # Created by https://www.toptal.com/developers/gitignore/api/terraform
 # Edit at https://www.toptal.com/developers/gitignore?templates=terraform
 
+### Ansible ###
+*.retry
+
 ### Terraform ###
 # Local .terraform directories
 **/.terraform/*

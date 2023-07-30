@@ -1,0 +1,26 @@
+---
+- name: Install required packages
+  hosts: all
+  become: true
+  tasks:
+    - name: Install required packages with apt
+      apt:
+        update_cache: true
+        state: present
+        name:
+          - fdisk
+          - drbd-utils
+          - pacemaker
+          - pcs
+          - corosync
+    
+    - name: Configure global_common.conf
+      file:
+        path: /etc/drbd.d/global_common.conf
+        src: global_common.conf        
+
+    - name: Configure drbd resource r0
+      template:
+        src: r0.res.j2
+        dest: /etc/drbd.d/r0.res
+

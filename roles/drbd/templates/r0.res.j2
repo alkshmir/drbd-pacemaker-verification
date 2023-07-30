@@ -1,0 +1,11 @@
+resource "r0" {
+  device minor 1;
+  disk "/dev/sdb";
+  meta-disk internal;
+
+  {% for host in groups['all'] %}
+  on {{ host }} {
+    address {{ hostvars[host]['ansible_host'] }}
+  }
+  {% endfor %}
+}
