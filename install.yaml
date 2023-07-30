@@ -6,3 +6,10 @@
       include_role:
         name: drbd
 
+- hosts: all[0]
+  gather_facts: true
+  tasks:
+    - name: Syncronize DRBD
+      command: drbdadm primary --force r0
+
+

@@ -56,6 +56,7 @@ jq '.resources[] | select(.type == "google_compute_instance") | .instances[].att
 
 setup inventory
 ```
+cp inventory_sample.yaml inventory.yaml
 vim inventory.yaml
 ```
 * replace `internal_ip` with the values specified by `jq` command above (or values shown on Google cloud console)

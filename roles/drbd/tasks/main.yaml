@@ -20,3 +20,15 @@
     src: r0.res.j2
     dest: /etc/drbd.d/r0.res
 
+- name: Create metadata for r0
+  command: drbdadm create-md r0
+
+- name: Enable resource r0
+  command: drbdadm up r0
+
+- name: Start drbd
+  systemd:
+    state: started
+    name: drbd
+    enabled: true
+
