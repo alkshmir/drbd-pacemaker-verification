@@ -35,6 +35,9 @@ resource "google_compute_instance" "vm_instance" {
     }
   }
 
+  # install ansible
+  metadata_startup_script = "sudo wget -O /usr/share/keyrings/ansible.asc 'https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x6125E2A8C77F2818FB7BD15B93C4A3FD7BB9C367'; sudo sh -c \"echo 'deb [signed-by=/usr/share/keyrings/ansible.asc] http://ppa.launchpad.net/ansible/ansible/ubuntu focal main' > /etc/apt/sources.list.d/ansible.list\"; sudo apt-get update; sudo apt-get install -y ansible git"
+
   network_interface {
     subnetwork = google_compute_subnetwork.default.id
     access_config {
