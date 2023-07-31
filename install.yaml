@@ -13,3 +13,10 @@
       command: drbdadm primary --force r0
 
 
+- hosts: all
+  gather_facts: true
+  tasks:
+    - name: Install PostgreSQL
+      include_role:
+        name: postgres
+

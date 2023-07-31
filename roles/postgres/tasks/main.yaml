@@ -1,0 +1,51 @@
+---
+- name: Import postgresql key
+  get_url:
+    url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+    dest: /usr/share/keyrings/postgresql.asc
+    mode: "0644"
+    force: true
+
+- name: Add postgresql apt key
+  apt_repository:
+    repo: deb [signed-by=/usr/share/keyrings/postgresql.asc] http://apt.postgresql.org/pub/repos/apt bullseye-pgdg main
+    state: present
+
+- name: Install postgresql 15
+  apt:
+    update_cache: true
+    state: present
+    name: 
+      - postgresql-15
+      - python3-psycopg2
+
+- name: Make data directory
+  file:
+    dest: /var/lib/pgsql
+    owner: postgres
+    group: postgres
+    state: directory
+    mode: "755"
+
+- name: Configure postgresql.conf
+  copy:
+    dest: /etc/postgresql/15/main/postgresql.conf
+    src: postgresql.conf
+    owner: postgres
+    group: postgres
+
+- name: Configure pg_hba.conf
+  copy:
+    dest: /etc/postgresql/15/main/pg_hba.conf
+    src: pg_hba.conf
+    owner: postgres
+    group: postgres
+
+- name: Create user custom_user
+  become: true
+  become_user: postgres
+  postgresql_user:
+    db: postgres
+    name: custom_user
+    role_attr_flags: LOGIN
+

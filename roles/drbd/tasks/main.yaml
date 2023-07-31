@@ -23,6 +23,7 @@
 - name: Check drbd device already configured
   command: drbdadm status r0
   register: drbd_configured
+  ignore_errors: true
 
 - name: debug
   debug: 
