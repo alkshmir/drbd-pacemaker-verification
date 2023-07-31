@@ -4,8 +4,8 @@ resource "r0" {
   meta-disk internal;
 
   {% for host in groups['all'] %}
-  on {{ host }} {
-    address {{ hostvars[host]['internal_ip'] }};
+  on "{{ host }}" {
+    address {{ hostvars[host]['internal_ip'] }}:7789;
   }
   {% endfor %}
 }
