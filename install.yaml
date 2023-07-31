@@ -12,6 +12,60 @@
     - name: Syncronize DRBD
       command: drbdadm primary --force r0
 
+## make pacemaker cluster
+- name: Start pacemaker
+  hosts: all
+  tasks:
+    - name: Start pacemaker
+      systemd:
+        state: started
+        name: pcsd
+        enabled: true
+
+    - name: Set hacluster user password
+      user:
+        name: hacluster
+        state: present
+        password: "{{ 'hacluster123' | password_hash('sha512') }}"
+
+    - name: Add node IPs into /etc/hosts
+      lineinfile:
+        path: /etc/hosts
+        line: "{{ hostvars[item]['internal_ip'] }} {{ item }}"
+        state: present
+      with_items: "{{ groups['all'] }}"
+      when: hostvars[item]['internal_ip'] is defined
+
+- name: Make pacemaker cluster
+  hosts: all[0]
+  tasks:
+    - name: Delete pacemaker cluster
+      command: pcs cluster destroy
+      ignore_errors: true
+
+    - name: Authenticate cluster
+      command: pcs host auth {% for host in groups['all'] %} {{ host }} {% endfor %} -u hacluster -p hacluster123
+
+    - name: Create pacemaker cluster
+      command: pcs cluster setup mycluster {% for host in groups['all'] %} {{ host }} {% endfor %} --force 
+
+    - name: Start cluster
+      command: pcs cluster start --all
+
+    - name: Enable cluster
+      command: pcs cluster enable --all
+
+    - name: Show status of cluster
+      command: pcs status
+      register: pcs_status
+
+    - debug:
+        msg: "{{ pcs_status.stdout }}"
+
+## manage DRBD by pacemaker
+
+#- name: Check if drbd_-1 already created
+#  command: pcs
 
 - hosts: all
   gather_facts: true
