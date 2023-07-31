@@ -1,4 +1,13 @@
+# drbd-pacemaker-verification
+Provision replicated block storage with DRBD and PostgreSQL on top of that managed by pacemaker cluster.
+VM provisioning by terraform ( tested on Google Cloud ) and installation of middleware by Ansible.
+
 ## deploy
+Before deploying resources you need to install following tools:
+- `gcloud`
+- `terraform`
+- `ansible`
+- `jq`
 
 ### configure ssh keys
 make ssh key pair to connect VMs.
@@ -24,7 +33,7 @@ terraform plan
 terraform apply
 ```
 
-above commands deploys 2 compute engines.
+above commands deploys 2 debian compute engines.
 ### configure ssh connections
 
 specify ephemeral external IPs of VMs (run on terraform node)
