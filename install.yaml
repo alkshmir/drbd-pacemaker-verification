@@ -64,8 +64,18 @@
 
 ## manage DRBD by pacemaker
 
-#- name: Check if drbd_-1 already created
-#  command: pcs
+    - name: Check if drbd_r0 already created
+      command: pcs resource describe drbd_r0
+      register: drbd_r0_created
+      ignore_errors: true
+
+    - name: Create drbd_r0 pacemaker resource
+      command: pcs resource create drbd_r0 ocf:linbit:drbd drbd_resource=r0 op monitor interval=10s op start timeout=240 op stop timeout=100 op promote timeout=60 op demote timeout=60
+      when: drbd_r0_created.rc != 0
+
+    - name: Define drbd_r0 as master slave resource
+      command: pcs resource promotable drbd_r0 master-max=1 master-node-max=1 clone-max=2 clone-node-max=1 notify=true
+      when: drbd_r0_created.rc != 0
 
 - hosts: all
   gather_facts: true

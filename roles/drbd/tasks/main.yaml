@@ -1,4 +1,9 @@
 ---
+- name: Check drbd device already configured
+  command: drbdadm status r0
+  register: drbd_configured
+  ignore_errors: true
+
 - name: Install required packages with apt
   apt:
     update_cache: true
@@ -14,20 +19,13 @@
   copy:
     dest: /etc/drbd.d/global_common.conf
     src: global_common.conf        
+  when: drbd_configured.rc != 0
 
 - name: Configure drbd resource r0
   template:
     src: r0.res.j2
     dest: /etc/drbd.d/r0.res
-
-- name: Check drbd device already configured
-  command: drbdadm status r0
-  register: drbd_configured
-  ignore_errors: true
-
-- name: debug
-  debug: 
-    var: drbd_configured.rc
+  when: drbd_configured.rc != 0
 
 - name: Create metadata for r0
   command: drbdadm create-md r0
