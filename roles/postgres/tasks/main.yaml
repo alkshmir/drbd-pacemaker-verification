@@ -19,6 +19,20 @@
       - postgresql-15
       - python3-psycopg2
 
+- name: Create user custom_user
+  become: true
+  become_user: postgres
+  postgresql_user:
+    db: postgres
+    name: custom_user
+    role_attr_flags: LOGIN
+
+- name: Stop postgresql
+  systemd:
+    name: postgresql
+    state: stopped
+    enabled: false
+
 - name: Make data directory
   file:
     dest: /var/lib/pgsql
@@ -40,12 +54,4 @@
     src: pg_hba.conf
     owner: postgres
     group: postgres
-
-- name: Create user custom_user
-  become: true
-  become_user: postgres
-  postgresql_user:
-    db: postgres
-    name: custom_user
-    role_attr_flags: LOGIN
 
