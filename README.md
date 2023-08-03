@@ -75,3 +75,32 @@ run installation
 ```
 ansible-playbook -i inventory.yaml install.yaml
 ```
+
+### Desired state of pacemaker
+```
+$ pcs status
+Cluster name: mycluster
+Cluster Summary:
+  * Stack: corosync
+  * Current DC: compute-instance-1 (version 2.0.5-ba59be7122) - partition with quorum
+  * Last updated: Thu Aug  3 15:02:26 2023
+  * Last change:  Thu Aug  3 15:01:08 2023 by root via cibadmin on compute-instance-1
+  * 2 nodes configured
+  * 4 resource instances configured
+
+Node List:
+  * Online: [ compute-instance-1 compute-instance-2 ]
+
+Full List of Resources:
+  * Clone Set: ms_drbd_r0 [drbd_r0] (promotable):
+    * Masters: [ compute-instance-1 ]
+    * Slaves: [ compute-instance-2 ]
+  * Resource Group: postgres:
+    * fs_drbd1  (ocf::heartbeat:Filesystem):     Started compute-instance-1
+    * postgresql        (ocf::heartbeat:pgsql):  Started compute-instance-1
+
+Daemon Status:
+  corosync: active/enabled
+  pacemaker: active/enabled
+  pcsd: active/enabled
+```
