@@ -9,6 +9,10 @@
 - hosts: all[0]
   gather_facts: true
   tasks:
+    - name: Destroy pacemaker cluster
+      command: pcs cluster destroy
+      ignore_errors: true
+
     - name: Syncronize DRBD
       command: drbdadm primary --force r0
 
@@ -55,6 +59,12 @@
     - name: Enable cluster
       command: pcs cluster enable --all
 
+    - name: Disable stonith (fencing) # XXX: Do not disable stonith on prod cluster, or enable quorum
+      command: pcs property set stonith-enabled=false
+
+    - name: Ignore no quorum
+      command: pcs property set no-quorum-policy=ignore
+
     - name: Show status of cluster
       command: pcs status
       register: pcs_status
@@ -74,14 +84,14 @@
       when: drbd_r0_created.rc != 0
 
     - name: Define drbd_r0 as master slave resource
-      command: pcs resource promotable ms_drbd_r0 drbd_r0 master-max=1 master-node-max=1 clone-max=2 clone-node-max=1 notify=true
+      command: pcs resource promotable drbd_r0 ms_drbd_r0 master-max=1 master-node-max=1 clone-max=2 clone-node-max=1 notify=true
       when: drbd_r0_created.rc != 0
 
 ## make ext4 filesystem on top of DRBD
 
     - name: Check if fs_drbd_1 already created
       command: pcs resource describe fs_drbd1
-      register: fs_drbd1
+      register: fs_drbd1_created
       ignore_errors: true
 
     - name: Make ext4 filesystem on top of DRBD
@@ -96,6 +106,9 @@
       command: pcs constraint order promote ms_drbd_r0 then start postgres
       when: fs_drbd1_created.rc != 0
 
+    - name: Cleanup resources
+      command: pcs resource cleanup
+
 - hosts: all
   gather_facts: true
   tasks:
@@ -109,10 +122,25 @@
     - name: Copy PostgreSQL data to drbd device
       copy:
         remote_src: true
-        src: /var/lib/postgesql/15
-        dest: /var/lib/pgsql/15
+        src: /var/lib/postgresql/15
+        dest: /var/lib/pgsql/
         owner: postgres
         group: postgres
+
+    - name: Start postgresql
+      systemd:
+        name: postgresql
+        state: started
+
+    - name: Create user custom_user
+      become: true
+      become_user: postgres
+      retries: 5
+      delay: 5
+      postgresql_user:
+        db: postgres
+        name: custom_user
+        role_attr_flags: LOGIN
 
     # TODO: check postgresql already created
     - name: Make postgresql pacemaker resource

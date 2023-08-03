@@ -39,6 +39,6 @@
   systemd:
     state: started
     name: drbd
-    enabled: true
-  when: drbd_configured.rc != 0
+    enabled: false
+  #when: drbd_configured.rc != 0
 

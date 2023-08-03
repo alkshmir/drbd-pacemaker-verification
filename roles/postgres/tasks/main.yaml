@@ -19,14 +19,6 @@
       - postgresql-15
       - python3-psycopg2
 
-- name: Create user custom_user
-  become: true
-  become_user: postgres
-  postgresql_user:
-    db: postgres
-    name: custom_user
-    role_attr_flags: LOGIN
-
 - name: Stop postgresql
   systemd:
     name: postgresql
